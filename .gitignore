@@ -15,6 +15,9 @@ logs/
 dags/__pycache__/
 plugins/__pycache__/
 
+# MinIO metadata
+processing/minio-data/
+
 # Jupyter
 *.ipynb_checkpoints
 
