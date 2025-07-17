@@ -14,6 +14,12 @@ __pycache__/
 logs/
 dags/__pycache__/
 plugins/__pycache__/
+orchestration/logs/
+orchestration/postgres-data/
+
+# Spark notebooks, warehouse (optional)
+processing/warehouse/
+processing/notebooks/
 
 # MinIO metadata
 processing/minio-data/
@@ -27,3 +33,4 @@ Thumbs.db
 
 # Local-only Docker overrides
 docker-compose.override.yml
+docker-compose.override.disabled
