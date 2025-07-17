@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.ipynb_checkpoints
+
+# Docker
+*.env
+*.log
+*.pid
+.env/
+.env.*
+
+# Airflow
+logs/
+dags/__pycache__/
+plugins/__pycache__/
+
+# Jupyter
+*.ipynb_checkpoints
+
+# OS files
+.DS_Store
+Thumbs.db
