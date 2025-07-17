@@ -1,0 +1,58 @@
+services:
+  # metadata DB
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+    networks:
+      - data_eng_net
+
+  # message broker
+  redis:
+    image: redis:7.2-bookworm
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+    networks:
+      - data_eng_net
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    ports: ["8793:8793"]
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports: ["8080:8080"]
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker
+
+  airflow-triggerer:
+    <<: *airflow-common
+    command: triggerer
+
+  airflow-init:
+    <<: *airflow-common
+    command: >
+      bash -c "airflow db upgrade &&
+               airflow users create --username airflow --password airflow
+               --firstname almog --lastname kapach --role Admin --email admin@example.com"
+
+networks:
+  data_eng_net:
+    external: true
+
+volumes:
+  pgdata:

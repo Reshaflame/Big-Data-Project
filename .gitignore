@@ -21,3 +21,6 @@ plugins/__pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local-only Docker overrides
+docker-compose.override.yml
