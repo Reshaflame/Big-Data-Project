@@ -12,50 +12,66 @@ services:
     volumes:
       - ${DATA_ROOT}/processing/minio-data:/data
     ports: ["9000:9000", "9001:9001"]
-    networks:
-      - data_eng_net
+    networks: [data_eng_net]
 
   rest:
-    image: tabulario/iceberg-rest:latest        # lighter than *_fixture*
-    container_name: iceberg-rest
-    depends_on: [ minio ]
+    image: tabulario/iceberg-rest:1.5.0
+    depends_on: [minio]
     environment:
-      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_ACCESS_KEY_ID:     ${MINIO_ROOT_USER}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
-      AWS_REGION: us-east-1
-      CATALOG_WAREHOUSE: s3a://warehouse/
-      CATALOG_IO_IMPL: org.apache.iceberg.aws.s3.S3FileIO
-      CATALOG_S3_ENDPOINT: http://minio:9000
-    ports: ["8181:8181"]
-    networks:
-      - data_eng_net
+      AWS_REGION:            us-east-1
+      CATALOG_WAREHOUSE:     s3://warehouse/
+      CATALOG_S3_ENDPOINT:         http://minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      CATALOG_IO__IMPL:            org.apache.iceberg.aws.s3.S3FileIO
+    volumes:
+      - ~/.ivy2/jars/org.apache.hadoop_hadoop-aws-3.3.4.jar:/app/quarkus-app/lib/hadoop-aws-3.3.4.jar
+      - ~/.ivy2/jars/com.amazonaws_aws-java-sdk-bundle-1.12.610.jar:/app/quarkus-app/lib/aws-java-sdk-bundle-1.12.610.jar
+    networks: [data_eng_net]
 
   spark:
     image: tabulario/spark-iceberg:latest
     container_name: spark-iceberg
-    depends_on: [ rest, minio ]
+    depends_on: [rest, minio]
+
     environment:
-      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
-      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
-      AWS_REGION: us-east-1
+      # –– MinIO creds ––
+      AWS_ACCESS_KEY_ID:       ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY:   ${MINIO_ROOT_PASSWORD}
+      AWS_REGION:              us-east-1
+
+      # –– Iceberg / catalog wiring ––
+      SPARK_CONF_spark_sql_extensions:                 org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+      SPARK_CONF_spark_sql_catalog_demo:                org.apache.iceberg.spark.SparkCatalog
+      SPARK_CONF_spark_sql_catalog_demo_type:           rest
+      SPARK_CONF_spark_sql_catalog_demo_uri:            http://rest:8181
+      SPARK_CONF_spark_sql_catalog_demo_warehouse:      s3://warehouse/
+      SPARK_CONF_spark_sql_catalog_demo_io-impl:        org.apache.iceberg.aws.s3.S3FileIO
+      SPARK_CONF_spark_sql_catalog_demo_s3_endpoint:    http://minio:9000
+      SPARK_CONF_spark_sql_catalog_demo_s3_path-style-access: "true"
+      SPARK_CONF_spark_sql_defaultCatalog:             demo
+
     volumes:
       - ${DATA_ROOT}/processing/warehouse:/home/iceberg/warehouse
       - ${DATA_ROOT}/processing/notebooks:/home/iceberg/notebooks
-    ports: ["8888:8888","4040:4040"]
-    networks:
-      - data_eng_net
+      - ${DATA_ROOT}/processing/libs:/opt/spark/external-jars
+      - ${DATA_ROOT}/processing/jobs:/opt/jobs
+      - ~/.ivy2:/root/.ivy2
+
+    ports: ["8888:8888", "4040:4040"]
+    networks: [data_eng_net]
 
   mc:
     image: minio/mc:latest
-    depends_on: [ minio ]
+    depends_on: [minio]
     entrypoint: >
       /bin/sh -c "
       until mc alias set minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}; do sleep 1; done;
       mc mb -p minio/warehouse || true;
       mc policy set public minio/warehouse;
-      tail -f /dev/null"
-    networks:
-      - data_eng_net
+      tail -f /demo/null"
+    networks: [data_eng_net]
 
 networks:
   data_eng_net:

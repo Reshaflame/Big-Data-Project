@@ -16,7 +16,17 @@ services:
     ports: ["9092:9092","9094:9094"]
     networks:
       - data_eng_net
-
+  csv-producer:
+    build: ./producer
+    depends_on: [kafka]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: email_send_stream
+      CSV_FILE: /data/bronze/bronze_email_send_stream.csv
+      THROTTLE_MS: 200
+    volumes:
+      - ../data:/data:ro            # mounts /data inside container
+    networks: [data_eng_net]
 networks:
   data_eng_net:
     external: true
