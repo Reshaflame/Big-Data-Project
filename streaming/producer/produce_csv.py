@@ -4,7 +4,7 @@ from kafka import KafkaProducer
 
 csv      = os.environ["CSV_FILE"]
 topic    = os.environ["KAFKA_TOPIC"]
-servers  = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+servers  = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
 pause_ms = int(os.environ.get("THROTTLE_MS", "0"))
 
 producer = KafkaProducer(bootstrap_servers=servers,

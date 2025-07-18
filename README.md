@@ -44,7 +44,7 @@ MINIO_ROOT_USER=admin
 MINIO_ROOT_PASSWORD=password
 
 # optional: Airflow tweaks
-AIRFLOW_UID=50000                 # UID inside containers
+AIRFLOW_UID=1000               # UID inside containers
 AIRFLOW_PROJ_DIR=${DATA_ROOT}/orchestration  # don’t touch
 ```
 

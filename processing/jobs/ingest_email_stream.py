@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------------------------
 from pyspark.sql import SparkSession, functions as F, types as T
 
-KAFKA_BOOTSTRAP = "kafka:9092"
+KAFKA_BOOTSTRAP = "kafka:29092"
 TOPIC           = "email_send_stream"
 CHECKPOINT_DIR  = "/home/iceberg/warehouse/checkpoints/email_send_stream"
 GOOD_TABLE      = "bronze.email_send_stream"

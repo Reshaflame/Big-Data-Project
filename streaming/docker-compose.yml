@@ -1,32 +1,59 @@
 version: "3.9"
 
 services:
-  kafka:
-    image: bitnami/kafka:latest
-    container_name: kafka
+  24sender-zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: 24sender-zookeeper
+    hostname: zookeeper
+    ports: ["2181:2181"]
     environment:
-      KAFKA_CFG_PROCESS_ROLES: broker,controller
-      KAFKA_CFG_NODE_ID: 1
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_CFG_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://0.0.0.0:9094,CONTROLLER://0.0.0.0:9093
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
-      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      ALLOW_PLAINTEXT_LISTENER: "yes"
-    ports: ["9092:9092","9094:9094"]
-    networks:
-      - data_eng_net
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks: [data_eng_net]
+
+  24sender-kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: 24sender-kafka
+    hostname: kafka
+    depends_on: [24sender-zookeeper]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks: [data_eng_net]
+
+  24sender-kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: 24sender-kafka-ui
+    depends_on: [24sender-kafka]
+    ports: ["8090:8080"]
+    environment:
+      KAFKA_CLUSTERS_0_NAME: 24sender
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks: [data_eng_net]
+
   csv-producer:
-    build: ./producer
-    depends_on: [kafka]
+    build: .
+    depends_on: [24sender-kafka]
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      PYTHONUNBUFFERED: "1"
       KAFKA_TOPIC: email_send_stream
       CSV_FILE: /data/bronze/bronze_email_send_stream.csv
       THROTTLE_MS: 200
     volumes:
-      - ../data:/data:ro            # mounts /data inside container
+      - ../data/bronze:/data/bronze
     networks: [data_eng_net]
+
 networks:
   data_eng_net:
     external: true

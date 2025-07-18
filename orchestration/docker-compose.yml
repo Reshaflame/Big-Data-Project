@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------
 
 x-airflow-common: &airflow-common
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.0.1}
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.1}
   environment:
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -15,7 +15,7 @@ x-airflow-common: &airflow-common
     - ${AIRFLOW_PROJ_DIR}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR}/config:/opt/airflow/config
-  user: "${AIRFLOW_UID:-50000}:0"
+  user: "${AIRFLOW_UID:-1000}:0"
   depends_on:
     postgres:
       condition: service_healthy
@@ -55,25 +55,33 @@ services:
 
   # ────────────────────────────────────────────────────────────────────
   # airflow core services (inherit common block via YAML anchor)
-  airflow-api:                # ← rename service (optional)
+  airflow-api:
     <<: *airflow-common
-    command: api-server       # ← NEW: Airflow-3 way to start the UI
+    command: webserver
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8080:8080"
 
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8793:8793"
 
   airflow-worker:
     <<: *airflow-common
     command: celery worker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   airflow-triggerer:
     <<: *airflow-common
     command: triggerer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   # one-shot DB init + admin user
   airflow-init:
@@ -81,14 +89,12 @@ services:
     command: >
       bash -c "
         airflow db migrate &&
-        airflow users create \
-          --username airflow \
-          --password airflow \
-          --firstname Almog \
-          --lastname Kapach \
-          --role Admin \
-          --email admin@example.com
+        airflow users create --username airflow --password airflow --firstname Almog --lastname Kapach --role Admin --email admin@example.com
       "
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+
 
 networks:
   data_eng_net:
