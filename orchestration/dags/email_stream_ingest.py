@@ -28,7 +28,7 @@ with DAG(
         auto_remove=True,
         command="/bin/bash -c '/opt/jobs/spark_submit.sh'",
         docker_url="unix://var/run/docker.sock",
-        network_mode="data_eng_net",
+        network_mode="24sender-network",
 
         # Use Mount objects instead of raw strings
         mounts=[

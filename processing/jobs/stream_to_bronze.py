@@ -13,15 +13,20 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 def create_spark_session():
     """Create Spark session with Kafka and Iceberg configuration"""
     return SparkSession.builder \
         .appName("Stream to Bronze Layer") \
+        .config("spark.jars", ",".join([
+            "/opt/spark/jars/spark-sql-kafka-0-10_2.12-3.4.1.jar",
+            "/opt/spark/jars/kafka-clients-3.4.0.jar",
+            "/opt/spark/jars/lz4-java-1.8.0.jar",
+            "/opt/spark/jars/iceberg-spark-runtime-3.4_2.12-1.4.2.jar"
+        ])) \
         .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
-        .config("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog") \
-        .config("spark.sql.catalog.local.type", "hadoop") \
-        .config("spark.sql.catalog.local.warehouse", "s3a://iceberg-warehouse/") \
+        .config("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog") \
+        .config("spark.sql.catalog.spark_catalog.type", "hive") \
+        .config("spark.sql.catalog.spark_catalog.warehouse", "s3a://iceberg-warehouse/") \
         .getOrCreate()
 
 
@@ -174,6 +179,53 @@ def process_inventory_updates_stream(spark):
     
     return query
 
+def process_email_send_stream(spark):
+    """Process live email-send events, echo to console + write to Bronze"""
+    logger.info("Starting email-send stream processing…")
+
+    send_schema = StructType([
+        StructField("send_id",          StringType(), True),
+        StructField("account_id",       StringType(), True),
+        StructField("sender_email",     StringType(), True),
+        StructField("reply_to_email",   StringType(), True),
+        StructField("recipient_count",  IntegerType(), True),
+        StructField("message_size_kb",  IntegerType(), True),
+        StructField("message_subject",  StringType(), True),
+        StructField("message_body",     StringType(), True),
+        StructField("event_time",       StringType(), True),
+        StructField("ingestion_time",   StringType(), True),
+    ])
+
+    raw = (spark.readStream
+           .format("kafka")
+           .option("kafka.bootstrap.servers", "kafka:29092")
+           .option("subscribe", "email_send_stream")
+           .option("startingOffsets", "latest")
+           .option("failOnDataLoss", "false")
+           .load())
+
+    parsed = (raw
+              .select(from_json(col("value").cast("string"), send_schema).alias("d"))
+              .select("d.*")
+              .withColumn("event_time", to_timestamp("event_time"))
+              .withColumn("ingestion_time", to_timestamp("ingestion_time")))
+
+    # ① console sink – so you can eyeball rows in the Airflow log
+    (parsed.writeStream
+           .format("console")
+           .outputMode("append")
+           .option("truncate", False)
+           .start())
+
+    # ② Iceberg (or Parquet) sink – real Bronze landing
+    return (parsed.writeStream
+            .format("iceberg")
+            .outputMode("append")
+            .trigger(processingTime="30 seconds")
+            .option("path", "local.bronze.email_send_stream")
+            .option("checkpointLocation",
+                    "s3a://iceberg-warehouse/checkpoints/bronze_email_send_stream")
+            .start())
 
 def monitor_queries(queries):
     """Monitor streaming queries and handle failures"""
@@ -215,6 +267,12 @@ def main():
         queries.append(inventory_query)
         logger.info(f"Inventory updates streaming query started: {inventory_query.id}")
         
+        # Process email send events
+        send_query = process_email_send_stream(spark)
+        queries.append(send_query)
+        logger.info(f"Email-send streaming query started: {send_query.id}")
+
+
         # Monitor queries
         monitor_queries(queries)
         

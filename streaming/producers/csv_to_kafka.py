@@ -16,7 +16,7 @@ CSV_PATH = sys.argv[1] if len(sys.argv) > 1 else "bronze_combined.csv"
 SLEEP_MIN = float(sys.argv[2]) if len(sys.argv) > 2 else 0.2
 SLEEP_MAX = float(sys.argv[3]) if len(sys.argv) > 3 else 1.0
 
-BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
+BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092").split(",")
 
 topic_map = {
     "sales": "sales-events",
