@@ -1,109 +1,119 @@
-# ----------------------------------------------------------------------
-# AIRFLOW STACK  --  single-host CeleryExecutor setup
-# ----------------------------------------------------------------------
+version: '3.8'
 
-x-airflow-common: &airflow-common
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.1}
+x-airflow-common:
+  &airflow-common
+  image: apache/airflow:2.7.2
   environment:
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
-    AIRFLOW__LOGGING__REMOTE_LOGGING: "False"
-    AIRFLOW__WEBSERVER__BASE_URL: http://airflow-api:8080
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: 'Uf8nYHcvPYCa_FPcSB-1BFNZuNgTKqCCgAXUKoXLWFw='
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    # Spark configuration
+    SPARK_MASTER_URL: spark://spark-master:7077
+    KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    MINIO_ENDPOINT: http://minio:9000
+    MINIO_ACCESS_KEY: minioadmin
+    MINIO_SECRET_KEY: minioadmin
+    _AIRFLOW_DB_UPGRADE: 'true'
+    _AIRFLOW_WWW_USER_CREATE: 'true'
+    _AIRFLOW_WWW_USER_USERNAME: 'airflow'
+    _AIRFLOW_WWW_USER_PASSWORD: 'airflow'
   volumes:
-    - ${AIRFLOW_PROJ_DIR}/dags:/opt/airflow/dags
-    - ${AIRFLOW_PROJ_DIR}/logs:/opt/airflow/logs
-    - ${AIRFLOW_PROJ_DIR}/plugins:/opt/airflow/plugins
-    - ${AIRFLOW_PROJ_DIR}/config:/opt/airflow/config
-  user: "${AIRFLOW_UID:-1000}:0"
+    - airflow-logs:/opt/airflow/logs
+  user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     postgres:
       condition: service_healthy
-    redis:
-      condition: service_healthy
   networks:
-    - data_eng_net
+    - 24sender-network
 
 services:
-  # ────────────────────────────────────────────────────────────────────
-  # metadata database
   postgres:
     image: postgres:13
+    container_name: airflow-postgres
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - pgdata:/var/lib/postgresql/data          # ← named volume (portable)
+      - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
       retries: 5
+      start_period: 5s
+    restart: always
     networks:
-      - data_eng_net
+      - 24sender-network
 
-  # ────────────────────────────────────────────────────────────────────
-  # message broker
-  redis:
-    image: redis:7.2-bookworm
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      retries: 5
-    networks:
-      - data_eng_net
-
-  # ────────────────────────────────────────────────────────────────────
-  # airflow core services (inherit common block via YAML anchor)
-  airflow-api:
+  airflow-webserver:
     <<: *airflow-common
+    container_name: airflow-webserver
     command: webserver
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${AIRFLOW_PROJ_DIR}/dags:/opt/airflow/dags
     ports:
-      - "8080:8080"
+      - "8081:8080"  # Host 8081 -> Container 8080 to avoid conflict with Spark UI
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
 
   airflow-scheduler:
     <<: *airflow-common
+    container_name: airflow-scheduler
     command: scheduler
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${AIRFLOW_PROJ_DIR}/dags:/opt/airflow/dags
-    ports:
-      - "8793:8793"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
 
-  airflow-worker:
-    <<: *airflow-common
-    command: celery worker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
-  airflow-triggerer:
-    <<: *airflow-common
-    command: triggerer
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
-  # one-shot DB init + admin user
   airflow-init:
     <<: *airflow-common
-    command: >
-      bash -c "
-        airflow db migrate &&
-        airflow users create --username airflow --password airflow --firstname Almog --lastname Kapach --role Admin --email admin@example.com
-      "
+    container_name: airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        mkdir -p /sources/logs /sources/dags /sources/plugins
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        exec /entrypoint airflow version
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: 'airflow'
+      _AIRFLOW_WWW_USER_PASSWORD: 'airflow'
+    user: "0:0"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - airflow-logs:/sources/logs
 
-
-
-networks:
-  data_eng_net:
-    external: true
+  airflow-cli:
+    <<: *airflow-common
+    profiles:
+      - debug
+    environment:
+      <<: *airflow-common-env
+      CONNECTION_CHECK_MAX_COUNT: "0"
+    command:
+      - bash
+      - -c
+      - airflow
 
 volumes:
-  pgdata:
+  postgres-db-volume:
+  airflow-logs:
+
+networks:
+  24sender-network:
+    external: true
+    name: 24sender-network 
