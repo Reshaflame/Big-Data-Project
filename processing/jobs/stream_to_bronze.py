@@ -27,6 +27,9 @@ def create_spark_session():
         .config("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog") \
         .config("spark.sql.catalog.spark_catalog.type", "hive") \
         .config("spark.sql.catalog.spark_catalog.warehouse", "s3a://iceberg-warehouse/") \
+        .config("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog") \
+        .config("spark.sql.catalog.local.type", "hadoop") \
+        .config("spark.sql.catalog.local.warehouse", "/opt/iceberg/warehouse") \
         .getOrCreate()
 
 

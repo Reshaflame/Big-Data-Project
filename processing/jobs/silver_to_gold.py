@@ -19,6 +19,9 @@ def create_spark_session():
     """Create Spark session with Iceberg configuration"""
     return SparkSession.builder \
         .appName("Silver to Gold ETL") \
+        .config("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog") \
+        .config("spark.sql.catalog.local.type", "hadoop") \
+        .config("spark.sql.catalog.local.warehouse", "/opt/iceberg/warehouse") \
         .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
         .config("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog") \
         .config("spark.sql.catalog.local.type", "hadoop") \
