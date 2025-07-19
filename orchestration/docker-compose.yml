@@ -9,6 +9,9 @@ x-airflow-common: &airflow-common
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
+    AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
+    AIRFLOW__LOGGING__REMOTE_LOGGING: "False"
+    AIRFLOW__WEBSERVER__BASE_URL: http://airflow-api:8080
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
   volumes:
     - ${AIRFLOW_PROJ_DIR}/dags:/opt/airflow/dags
@@ -60,6 +63,7 @@ services:
     command: webserver
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${AIRFLOW_PROJ_DIR}/dags:/opt/airflow/dags
     ports:
       - "8080:8080"
 
@@ -68,6 +72,7 @@ services:
     command: scheduler
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${AIRFLOW_PROJ_DIR}/dags:/opt/airflow/dags
     ports:
       - "8793:8793"
 
