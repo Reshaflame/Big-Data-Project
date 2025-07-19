@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Run all Kafka producers concurrently
+Run the e-mail Kafka producer (and any future ones) concurrently.
+Each entry in PRODUCERS should be a *full command list*.
 """
 
 import subprocess
@@ -8,73 +9,67 @@ import time
 import os
 import signal
 import sys
+from pathlib import Path
 
-# List of producer scripts
+# ---  edit here if you add more producers  ------------------------------------
 PRODUCERS = [
-    'generate_sales_events.py',
-    'generate_equipment_metrics.py',
-    'generate_inventory_updates.py'
+    # path, CSV-file,   sleep-min, sleep-max
+    ["publish_email_send.py",
+     str(Path(__file__).parent / "../data/bronze_email_send_stream.csv"),
+     "0.2",
+     "0.8"],
 ]
+# ------------------------------------------------------------------------------
 
 processes = []
 
 
 def signal_handler(sig, frame):
     """Handle Ctrl+C gracefully"""
-    print('\nShutting down all producers...')
-    for process in processes:
-        process.terminate()
+    print("\nShutting down all producers …")
+    for proc in processes:
+        proc.terminate()
     sys.exit(0)
 
 
-def main():
-    """Start all producers"""
+def main() -> None:
     signal.signal(signal.SIGINT, signal_handler)
-    
-    print("Starting all Kafka producers...")
-    print(f"Kafka Bootstrap Servers: {os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')}")
-    print("-" * 50)
-    
-    # Start each producer in a separate process
-    for producer_script in PRODUCERS:
-        print(f"Starting {producer_script}...")
-        process = subprocess.Popen(
-            ['python', '-u', producer_script],
+
+    print("Starting Kafka producers …")
+    print(f"Kafka Bootstrap Servers: {os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')}")
+    print("-" * 60)
+
+    for cmd in PRODUCERS:
+        print(f"Launching {' '.join(cmd)}")
+        proc = subprocess.Popen(
+            ["python", "-u", *cmd],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
-            bufsize=1
+            bufsize=1,
         )
-        processes.append(process)
-        time.sleep(2)  # Give each producer time to start
-    
-    print(f"\nAll {len(PRODUCERS)} producers started successfully!")
-    print("Press Ctrl+C to stop all producers")
-    print("-" * 50)
-    
-    # Monitor processes and print output
+        processes.append(proc)
+        time.sleep(2)           # stagger start-up
+
+    print(f"\n✓ {len(PRODUCERS)} producer(s) running.  Ctrl-C to stop.")
+    print("-" * 60)
+
     try:
         while True:
-            for i, process in enumerate(processes):
-                # Check if process is still running
-                if process.poll() is not None:
-                    print(f"\nWARNING: Producer {PRODUCERS[i]} has stopped!")
-                    # Restart the producer
-                    print(f"Restarting {PRODUCERS[i]}...")
-                    new_process = subprocess.Popen(
-                        ['python', '-u', PRODUCERS[i]],
+            time.sleep(5)
+            for i, proc in enumerate(processes):
+                if proc.poll() is not None:      # crashed → restart
+                    print(f"\n⚠️  {PRODUCERS[i][0]} stopped — restarting …")
+                    processes[i] = subprocess.Popen(
+                        ["python", "-u", *PRODUCERS[i]],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.STDOUT,
                         universal_newlines=True,
-                        bufsize=1
+                        bufsize=1,
                     )
-                    processes[i] = new_process
-            
-            time.sleep(5)  # Check every 5 seconds
-            
     except KeyboardInterrupt:
         signal_handler(None, None)
 
 
 if __name__ == "__main__":
-    main() 
+    main()
