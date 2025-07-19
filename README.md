@@ -1,21 +1,35 @@
 # Data Engineering Final Project
 
-This repository contains a **local‑first, fully containerised** data‑engineering stack built around **Spark + Iceberg + MinIO + Kafka + Airflow 3**.  Follow the steps below and you’ll have the whole system running on any Windows/macOS/Linux laptop in under five minutes.
+> **🆕 July 2025 Update 2 – Email Analytics Pipeline**
+>
+> A brand‑new **email pipeline** is live: Iceberg DDL for Bronze → Silver → Gold plus one‑shot CSV loaders. See **What’s new** ⬇️
 
 ---
 
-## 0  Prerequisites
+## What’s new
 
-| Tool                 | Version                     | Notes                                          |
-| -------------------- | --------------------------- | ---------------------------------------------- |
-| Docker Desktop       |  24 or newer                | Linux users can use Docker Engine + Compose v2 |
-| Docker Compose v2    | bundled with Docker Desktop | run `docker compose version` to verify         |
-| Git                  | any recent                  | ‑                                              |
-| (Windows only) WSL 2 | Ubuntu 20.04+               | recommended for best I/O performance           |
+| Area                | Highlights                                                                                                                                                                                                                                                                                                                                           |
+| :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Streaming stack** | <ul><li>📦 `streaming/` compose spins Kafka + Zookeeper + Kafka‑UI.</li><li>🪄 Producers for *sales‑events*, *equipment‑metrics*, *inventory‑updates* **and** *email‑send*.</li></ul>                                                                                                                                                                |
+| **Spark jobs**      | <ul><li>🚰 `stream_to_bronze.py` – universal Structured Streaming sink.</li><li>✉️ `ingest_email_stream.py` – dedicated live pipeline for email events.</li><li>🏗️ `init_email_iceberg_tables.py` – creates all Email tables (Bronze/Silver/Gold).</li><li>📥 `load_bronze_email_csvs.py` – bulk‑loads historical email CSVs into Bronze.</li></ul> |
+| **Airflow 3 DAGs**  | <ul><li>🆕 `email_stream_ingest` – DockerOperator wrapper for the live email stream.</li><li>🆕 `email_csv_bootstrap` – runs the two new jobs once per env.</li></ul>                                                                                                                                                                                |
+| **Makefile**        | <ul><li>`make init-email` – runs the Iceberg DDL + CSV loader end‑to‑end.</li><li>Existing targets (`producers`, `streaming`, `demo`) unchanged.</li></ul>                                                                                                                                                                                           |
+| **Compose tweaks**  | Added read‑only mount `../processing/data → /opt/spark-apps/data` so Spark can see bootstrap CSVs.                                                                                                                                                                                                                                                   |
 
 ---
 
-## 1  Create / clone the project
+## 0 Prerequisites
+
+| Tool                 | Version       | Notes                              |
+| -------------------- | ------------- | ---------------------------------- |
+| Docker Desktop       | 24 or newer   | Linux: Docker Engine + Compose v2  |
+| Docker Compose v2    | bundled       | `docker compose version` to verify |
+| Git                  | any recent    | –                                  |
+| (Windows only) WSL 2 | Ubuntu 20.04+ | best I/O perf                      |
+
+---
+
+## 1 Clone the project
 
 ```bash
 # choose any folder you like
@@ -25,109 +39,112 @@ cd data-eng-project
 
 ---
 
-## 2  Create your personal **.env** file
+## 2 Create your personal `.env`
 
-The project ships with ``.  Copy it and adjust the absolute path to where you cloned the repo.
+Copy the template and adjust `DATA_ROOT` – everything else works out‑of‑the‑box.
 
 ```bash
 cp .env.example .env
-# then edit .env
 ```
 
 ```dotenv
-# .env ------------------------------------------------------
-# root of the repo on *your* machine
-DATA_ROOT=/absolute/path/to/data-eng-project
-
-# object‑storage credentials (feel free to change)
+DATA_ROOT=/abs/path/to/data-eng-project
 MINIO_ROOT_USER=admin
 MINIO_ROOT_PASSWORD=password
-
-# optional: Airflow tweaks
-AIRFLOW_UID=1000               # UID inside containers
-AIRFLOW_PROJ_DIR=${DATA_ROOT}/orchestration  # don’t touch
-```
-
-> **Everyone sets their own path**.  The file is *git‑ignored*, so it never clutters the repo.
-
----
-
-## 3  One‑time network
-
-```bash
-docker network create data_eng_net   # safe to re‑run if it already exists
+AIRFLOW_UID=1000
+AIRFLOW_PROJ_DIR=${DATA_ROOT}/orchestration
 ```
 
 ---
 
-## 4  Spin up the stack
+## 3 One‑time network
 
 ```bash
-# Storage + processing (MinIO, Spark, Iceberg REST)
-cd processing && docker compose --env-file ../.env up -d && cd ..
+docker network create data_eng_net   # safe if it exists
+```
+
+---
+
+## 4 Spin up the stack
+
+```bash
+# Storage + Spark + Iceberg
+docker compose -f processing/docker-compose.yml --env-file .env up -d
 
 # Streaming (Kafka)
-cd streaming && docker compose --env-file ../.env up -d && cd ..
+docker compose -f streaming/docker-compose.yml  --env-file .env up -d
 
-# Orchestration (Airflow 3 + Postgres + Redis)
-cd orchestration && docker compose --env-file ../.env up -d && cd ..
+# Orchestration (Airflow 3)
+docker compose -f orchestration/docker-compose.yml --env-file .env up -d
 ```
 
-### First‑run timings (cold start)
-
-| Stack         | Time    |
-| ------------- | ------- |
-| Processing    | ≈ 1 min |
-| Streaming     | 30 s    |
-| Orchestration | 2 min   |
+> **Note:** `processing/docker-compose.yml` now mounts `../processing/data` into the Spark client container at `/opt/spark-apps/data` (read‑only) – required for the email CSV bootstrap.
 
 ---
 
-## 5  Web UIs & credentials
+### 4.1 Initialise the Email Iceberg schema and seed Bronze
 
-| Component         | URL                                                        | Default creds       | Notes                                                      |
-| ----------------- | ---------------------------------------------------------- | ------------------- | ---------------------------------------------------------- |
-| **Airflow 3 UI**  | [`http://localhost:8080/home`](http://localhost:8080/home) | `airflow / airflow` | The root path `/` returns *connection reset*; use `/home`. |
-| **MinIO Console** | [`http://localhost:9001`](http://localhost:9001)           | `admin / password`  | Change in `.env` if you like.                              |
-| **Spark UI**      | [`http://localhost:4040`](http://localhost:4040)           | –                   | Visible only while a Spark job is running.                 |
-| **Iceberg REST**  | [`http://localhost:8181`](http://localhost:8181)           | –                   | Programmatic access only.                                  |
-
----
-
-## 6  Stopping / cleaning up
+Run once per environment (or use `make init-email`).
 
 ```bash
-# stop containers (keep volumes)
-cd processing      && docker compose down && cd ..
-cd streaming       && docker compose down && cd ..
-cd orchestration   && docker compose down && cd ..
+# create tables
+docker exec -it spark-submit spark-submit /opt/jobs/init_email_iceberg_tables.py
 
-# free disk (delete all named volumes)
-docker volume rm $(docker volume ls -q)
+# load historical CSVs into Bronze
+docker exec -it spark-submit spark-submit /opt/jobs/load_bronze_email_csvs.py
+```
+
+You should see ≈100 rows in each `local.bronze.*` table in the Spark console.
+
+---
+
+## 5 Web UIs & credentials
+
+| Component     | URL                                                      | Default creds       | Notes                     |
+| ------------- | -------------------------------------------------------- | ------------------- | ------------------------- |
+| Airflow 3     | [http://localhost:8080/home](http://localhost:8080/home) | `airflow / airflow` | open `/home` not `/`      |
+| MinIO Console | [http://localhost:9001](http://localhost:9001)           | `admin / password`  | change in `.env`          |
+| Spark UI      | [http://localhost:4040](http://localhost:4040)           | –                   | only while job is running |
+| Iceberg REST  | [http://localhost:8181](http://localhost:8181)           | –                   | programmatic              |
+| Kafka UI      | [http://localhost:8090](http://localhost:8090)           | –                   | browse topics             |
+
+---
+
+## 6 Getting Started – Streaming edition 🛰️
+
+```bash
+make start        # builds & boots full stack
+make init-email   # run the Iceberg DDL + CSV loader
+make producers    # start Kafka producers (sales, metrics, inventory, email)
+make streaming    # launch Spark Structured Streaming consumer
+```
+
+* Monitor Spark → Streaming tab
+* Check MinIO → `bronze/` Iceberg files
+* Trigger DAG `24sender_batch_etl` in Airflow to push Bronze → Silver → Gold
+
+---
+
+## 7 Stopping / cleaning up
+
+```bash
+make stop         # stops all compose stacks
+make clean        # removes **all** named volumes – destructive!
 ```
 
 ---
 
-## 7  (Advanced) Local override
+## 8 Troubleshooting
 
-If you want Postgres **outside** Docker’s internal volume store, create an **uncharted** file `orchestration/docker-compose.override.yml`:
-
-```yaml
-services:
-  postgres:
-    volumes:
-      - /ext4/path/airflow-pgdata:/var/lib/postgresql/data
-```
-
-The override is `.gitignore`d, so it only affects your machine.
+* **404 on Spark UI** – open `<host>:4040` only while a job is active.
+* **Airflow connection reset** – always point browser to `/home`.
+* **CatalogNotFoundException (`local` vs `spark_catalog`)** – ensure the extra `.config("spark.sql.catalog.local …)` lines are present in every `create_spark_session()`.
+* **CSV loader can’t find files** – verify `processing/data/bronze_*` exist and the volume mount is in place.
 
 ---
 
-## 8  Troubleshooting
+## 9 Reference docs
 
-- `connection reset` on port 8080 → remember to visit `/home`, not `/`.
-- **Permission errors** in Airflow logs on Windows → run `chmod -R 777 orchestration/{logs,dags,plugins}` inside WSL.
-- **Port already in use** → edit the `ports:` section and pick a free host port.
+See [`docs/`](docs/) for architecture diagrams, data models, and a full walkthrough.
 
-Happy hacking!
-
+Happy hacking & may your streams be ever‑flowing! 🚀
