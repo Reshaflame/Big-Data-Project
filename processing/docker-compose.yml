@@ -99,6 +99,7 @@ services:
         --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
     volumes:
       - ../processing/jobs:/opt/jobs
+      - ../processing/data:/opt/spark-apps/data:ro
       - ../processing/jars:/opt/spark/jars
     networks:
       - 24sender-network
