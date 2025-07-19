@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.providers.docker.operators.docker import DockerOperator
-from docker.types import Mount  # <-- THIS is the missing part!
+from docker.types import Mount
 
 with DAG("test_docker", start_date=days_ago(0), schedule_interval=None, catchup=False) as dag:
     test = DockerOperator(
