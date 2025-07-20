@@ -1,150 +1,121 @@
-# Data Engineering Final Project
+## 🔟 Appendix – Manual Pipeline Execution (⏱ Interim Path)
 
-> **🆕 July 2025 Update 2 – Email Analytics Pipeline**
->
-> A brand‑new **email pipeline** is live: Iceberg DDL for Bronze → Silver → Gold plus one‑shot CSV loaders. See **What’s new** ⬇️
+> **Heads‑up 🚧** Until the Airflow DAGs are finished, you can still run the full pipeline end‑to‑end with the CLI recipe below. These commands replicate what the DAGs will do automatically, so our lecturer/reviewer can reproduce the demo.
 
 ---
 
-## What’s new
-
-| Area                | Highlights                                                                                                                                                                                                                                                                                                                                           |
-| :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Streaming stack** | <ul><li>📦 `streaming/` compose spins Kafka + Zookeeper + Kafka‑UI.</li><li>🪄 Producers for *sales‑events*, *equipment‑metrics*, *inventory‑updates* **and** *email‑send*.</li></ul>                                                                                                                                                                |
-| **Spark jobs**      | <ul><li>🚰 `stream_to_bronze.py` – universal Structured Streaming sink.</li><li>✉️ `ingest_email_stream.py` – dedicated live pipeline for email events.</li><li>🏗️ `init_email_iceberg_tables.py` – creates all Email tables (Bronze/Silver/Gold).</li><li>📥 `load_bronze_email_csvs.py` – bulk‑loads historical email CSVs into Bronze.</li></ul> |
-| **Airflow 3 DAGs**  | <ul><li>🆕 `email_stream_ingest` – DockerOperator wrapper for the live email stream.</li><li>🆕 `email_csv_bootstrap` – runs the two new jobs once per env.</li></ul>                                                                                                                                                                                |
-| **Makefile**        | <ul><li>`make init-email` – runs the Iceberg DDL + CSV loader end‑to‑end.</li><li>Existing targets (`producers`, `streaming`, `demo`) unchanged.</li></ul>                                                                                                                                                                                           |
-| **Compose tweaks**  | Added read‑only mount `../processing/data → /opt/spark-apps/data` so Spark can see bootstrap CSVs.                                                                                                                                                                                                                                                   |
-
----
-
-## 0 Prerequisites
-
-| Tool                 | Version       | Notes                              |
-| -------------------- | ------------- | ---------------------------------- |
-| Docker Desktop       | 24 or newer   | Linux: Docker Engine + Compose v2  |
-| Docker Compose v2    | bundled       | `docker compose version` to verify |
-| Git                  | any recent    | –                                  |
-| (Windows only) WSL 2 | Ubuntu 20.04+ | best I/O perf                      |
-
----
-
-## 1 Clone the project
+### 1 Prepare Docker networks
 
 ```bash
-# choose any folder you like
-git clone https://github.com/<your‑org>/data-eng-project.git
-cd data-eng-project
+docker network create data_eng_net          # safe if already exists
+docker network create 24sender-network     # stack‑internal
 ```
 
----
-
-## 2 Create your personal `.env`
-
-Copy the template and adjust `DATA_ROOT` – everything else works out‑of‑the‑box.
+### 2 Spin‑up the three core stacks
 
 ```bash
-cp .env.example .env
-```
-
-```dotenv
-DATA_ROOT=/abs/path/to/data-eng-project
-MINIO_ROOT_USER=admin
-MINIO_ROOT_PASSWORD=password
-AIRFLOW_UID=1000
-AIRFLOW_PROJ_DIR=${DATA_ROOT}/orchestration
-```
-
----
-
-## 3 One‑time network
-
-```bash
-docker network create data_eng_net   # safe if it exists
-```
-
----
-
-## 4 Spin up the stack
-
-```bash
-# Storage + Spark + Iceberg
-docker compose -f processing/docker-compose.yml --env-file .env up -d
+# Storage + Spark + Iceberg
+docker compose -f processing/docker-compose.yml      --env-file .env up -d
 
 # Streaming (Kafka)
-docker compose -f streaming/docker-compose.yml  --env-file .env up -d
+docker compose -f streaming/docker-compose.yml       --env-file .env up -d
 
-# Orchestration (Airflow 3)
-docker compose -f orchestration/docker-compose.yml --env-file .env up -d
+# Orchestration shell (Airflow 3 – optional for now)
+docker compose -f orchestration/docker-compose.yml    --env-file .env up -d
 ```
 
-> **Note:** `processing/docker-compose.yml` now mounts `../processing/data` into the Spark client container at `/opt/spark-apps/data` (read‑only) – required for the email CSV bootstrap.
-
----
-
-### 4.1 Initialise the Email Iceberg schema and seed Bronze
-
-Run once per environment (or use `make init-email`).
+Verify everything with:
 
 ```bash
-# create tables
-docker exec -it spark-submit spark-submit /opt/jobs/init_email_iceberg_tables.py
-
-# load historical CSVs into Bronze
-docker exec -it spark-submit spark-submit /opt/jobs/load_bronze_email_csvs.py
+docker ps
 ```
 
-You should see ≈100 rows in each `local.bronze.*` table in the Spark console.
-
 ---
 
-## 5 Web UIs & credentials
-
-| Component     | URL                                                      | Default creds       | Notes                     |
-| ------------- | -------------------------------------------------------- | ------------------- | ------------------------- |
-| Airflow 3     | [http://localhost:8080/home](http://localhost:8080/home) | `airflow / airflow` | open `/home` not `/`      |
-| MinIO Console | [http://localhost:9001](http://localhost:9001)           | `admin / password`  | change in `.env`          |
-| Spark UI      | [http://localhost:4040](http://localhost:4040)           | –                   | only while job is running |
-| Iceberg REST  | [http://localhost:8181](http://localhost:8181)           | –                   | programmatic              |
-| Kafka UI      | [http://localhost:8090](http://localhost:8090)           | –                   | browse topics             |
-
----
-
-## 6 Getting Started – Streaming edition 🛰️
+### 3 Iceberg bootstrap (schema + historical seed)
 
 ```bash
-make start        # builds & boots full stack
-make init-email   # run the Iceberg DDL + CSV loader
-make producers    # start Kafka producers (sales, metrics, inventory, email)
-make streaming    # launch Spark Structured Streaming consumer
+# give Spark full RW access to the local warehouse first
+docker exec -u 0 -it spark-submit mkdir -p /home/iceberg/warehouse
+docker exec -u 0 -it spark-submit chmod -R 777 /home/iceberg
+
+# 3.1 Create all e‑mail tables (Bronze → Silver → Gold)
+docker exec -it spark-submit spark-submit \
+  --packages org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.4.2 \
+  /opt/jobs/init_iceberg_email_pipeline.py
+
+# 3.2 Upload historical CSV snapshots into Bronze
+#    (the live Kafka stream will pick up from here)
+docker exec -it spark-submit mkdir -p /tmp/data/bronze
+docker cp $PWD/processing/jobs/data/bronze/. spark-submit:/tmp/data/bronze
 ```
 
-* Monitor Spark → Streaming tab
-* Check MinIO → `bronze/` Iceberg files
-* Trigger DAG `24sender_batch_etl` in Airflow to push Bronze → Silver → Gold
-
----
-
-## 7 Stopping / cleaning up
+**Quick sanity‑check**
 
 ```bash
-make stop         # stops all compose stacks
-make clean        # removes **all** named volumes – destructive!
+# List Bronze tables
+docker exec -it spark-submit spark-sql \
+  --packages org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.4.2 \
+  --conf spark.sql.catalog.local=org.apache.iceberg.spark.SparkCatalog \
+  --conf spark.sql.catalog.local.type=hadoop \
+  --conf spark.sql.catalog.local.warehouse=/home/iceberg/warehouse \
+  -e "SHOW TABLES IN local.bronze;"
+```
+
+Open MinIO → [http://localhost:9001](http://localhost:9001) and make sure objects appear under `bronze/`.
+
+---
+
+### 4 Manual ETL (Bronze → Silver → Gold)
+
+> *Skip this section if you only need Bronze tables.*
+
+```bash
+# Bronze → Silver
+docker cp processing/jobs/bronze_to_silver.py spark-submit:/opt/bronze_to_silver.py
+
+docker exec -it spark-submit spark-submit \
+  --packages org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.4.3 \
+  --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+  --conf spark.sql.catalog.local=org.apache.iceberg.spark.SparkCatalog \
+  --conf spark.sql.catalog.local.type=hadoop \
+  --conf spark.sql.catalog.local.warehouse=/home/iceberg/warehouse \
+  /opt/bronze_to_silver.py
+
+# Silver → Gold (optional)
+docker cp processing/jobs/silver_to_gold.py spark-submit:/opt/silver_to_gold.py
+
+docker exec -it spark-submit spark-submit \
+  --packages org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.4.3 \
+  --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+  --conf spark.sql.catalog.local=org.apache.iceberg.spark.SparkCatalog \
+  --conf spark.sql.catalog.local.type=hadoop \
+  --conf spark.sql.catalog.local.warehouse=/home/iceberg/warehouse \
+  /opt/silver_to_gold.py
+```
+
+*Check Silver tables*
+
+```bash
+docker exec -it spark-submit spark-sql \
+  --packages org.apache.iceberg:iceberg-spark-runtime-3.4_2.12:1.5.2 \
+  --conf spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions \
+  --conf spark.sql.catalog.local=org.apache.iceberg.spark.SparkCatalog \
+  --conf spark.sql.catalog.local.type=hadoop \
+  --conf spark.sql.catalog.local.warehouse=/home/iceberg/warehouse \
+  -e "SHOW TABLES IN local.silver;"
 ```
 
 ---
 
-## 8 Troubleshooting
+### 5 Clean‑up
 
-* **404 on Spark UI** – open `<host>:4040` only while a job is active.
-* **Airflow connection reset** – always point browser to `/home`.
-* **CatalogNotFoundException (`local` vs `spark_catalog`)** – ensure the extra `.config("spark.sql.catalog.local …)` lines are present in every `create_spark_session()`.
-* **CSV loader can’t find files** – verify `processing/data/bronze_*` exist and the volume mount is in place.
+```bash
+make stop   # or run docker compose down per stack
+make clean  # ⚠️ DESTROYS all named volumes
+```
 
 ---
 
-## 9 Reference docs
+When the fully‑automated DAGs land, this appendix will be removed. Until then: happy streaming & enjoy the hands‑on tour! ✨
 
-See [`docs/`](docs/) for architecture diagrams, data models, and a full walkthrough.
-
-Happy hacking & may your streams be ever‑flowing! 🚀
