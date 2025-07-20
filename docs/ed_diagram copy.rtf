@@ -1,0 +1,578 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Bold;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red130\green53\blue188;\red255\green255\blue254;\red0\green0\blue0;
+\red44\green218\blue151;\red143\green16\blue118;\red153\green115\blue4;\red16\green121\blue2;}
+{\*\expandedcolortbl;;\cssrgb\c58824\c31373\c78431;\cssrgb\c100000\c100000\c99608;\cssrgb\c0\c0\c0;
+\cssrgb\c16863\c87059\c65882;\cssrgb\c63529\c15686\c53725;\cssrgb\c66667\c52157\c0;\cssrgb\c0\c53333\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\b\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+erDiagram
+\f1\b0 \cf0 \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb3     \cf5 direction\cf6  TB\cf0 \cb1 \
+\cb3     \cf6 BRONZE_EMAIL_SEND_STREAM\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  send_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 email\cf6  sender_email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 email\cf6  reply_to_email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 integer\cf6  recipient_count\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 integer\cf6  message_size_kb\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  message_subject\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  message_body\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 datetime\cf6  timestamp\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 BRONZE_EMAIL_INTERACTIONS\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  interaction_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  send_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 email\cf6  recipient_email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  interaction_type\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 datetime\cf6  interaction_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  details\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 BRONZE_EMAIL_DELIVERY_SERVERS\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  server_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 IP\cf6  ip_address\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  profile_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 float\cf6  current_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf6 text\cf0 [] \cf6 blacklist_status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 BRONZE_FORM_SUBMISSIONS\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  submission_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  landing_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 datetime\cf6  submit_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 IP\cf6  visitor_ip\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  utm_source\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  utm_medium\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  utm_campaign\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 integer\cf6  time_to_submit_sec\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  form_data\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 BRONZE_SUBSCRIBERS\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  subscriber_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 email\cf6  email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 text\cf6  subscription_status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 datetime\cf6  date_added\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 SILVER_CAMPAIGN_BASE\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  send_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  sender_email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  subject\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  server_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  server_ip\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  ingestion_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 SILVER_EMAIL_INTERACTIONS_CLEANED\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  interaction_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  send_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  recipient_email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  interaction_type\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  response_delay_sec\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  details\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  ingestion_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 SILVER_SUBSCRIBER_BASE\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  subscriber_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  subscription_status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_interactions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  last_event_type\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  first_event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  last_event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  ingestion_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 SILVER_FORM_SUBMISSIONS_CLEANED\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  submission_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  landing_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  visitor_ip\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  utm_source\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  utm_medium\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  utm_campaign\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  time_to_submit_sec\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  name\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  company\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  ingestion_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 SILVER_SERVER_STATUS_ENRICHED\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  server_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  ip_address\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  current_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  blacklist_status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  risk_level\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  blacklist_count\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  ingestion_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 GOLD_CAMPAIGN_CONTENT_INSIGHTS\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  send_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  subject\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  subject_length\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  body_length\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  template_name\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  element_count\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 BOOLEAN\cf6  has_cta_button\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 BOOLEAN\cf6  is_text_only\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_interactions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  open_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  click_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  content_style\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  recommendation\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 GOLD_SUBSCRIBER_ENGAGEMENT_SCORE\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  subscriber_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_interactions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  open_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  click_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  spam_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  unsubscribe_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  avg_response_delay_sec\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  days_since_last_event\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  engagement_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 GOLD_SUBSCRIBER_CHURN_RISK_PREDICTION\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  subscriber_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  churn_risk_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  churn_risk_level\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  days_since_last_event\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_interactions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  unsubscribe_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  spam_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 GOLD_SERVER_PROFILE_RECOMMENDATION\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  server_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  ip_address\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  current_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  blacklist_count\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  recommended_action\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  recommendation_reason\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 GOLD_ACCOUNT_SCORE_SUMMARY\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_campaigns_sent\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_interactions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  open_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  spam_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_form_submissions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  landing_conversion_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  avg_server_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  account_health\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  improvement_suggestion\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 BRONZE_EMAIL_SEND_STREAM
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 SILVER_CAMPAIGN_BASE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "cleansed_to"\cf0 \cb1 \
+\cb3     \cf6 BRONZE_EMAIL_INTERACTIONS
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 SILVER_EMAIL_INTERACTIONS_CLEANED
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "cleansed_to"\cf0 \cb1 \
+\cb3     \cf6 BRONZE_SUBSCRIBERS
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 SILVER_SUBSCRIBER_BASE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "enriched_to"\cf0 \cb1 \
+\cb3     \cf6 BRONZE_FORM_SUBMISSIONS
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 SILVER_FORM_SUBMISSIONS_CLEANED
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "cleansed_to"\cf0 \cb1 \
+\cb3     \cf6 BRONZE_EMAIL_DELIVERY_SERVERS
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 SILVER_SERVER_STATUS_ENRICHED
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "enriched_to"\cf0 \cb1 \
+\cb3     \cf6 SILVER_CAMPAIGN_BASE
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 GOLD_CAMPAIGN_CONTENT_INSIGHTS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "analyzed_to"\cf0 \cb1 \
+\cb3     \cf6 SILVER_EMAIL_INTERACTIONS_CLEANED
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 GOLD_SUBSCRIBER_ENGAGEMENT_SCORE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "aggregated_to"\cf0 \cb1 \
+\cb3     \cf6 SILVER_SUBSCRIBER_BASE
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 GOLD_SUBSCRIBER_CHURN_RISK_PREDICTION
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "predicted_to"\cf0 \cb1 \
+\cb3     \cf6 SILVER_SERVER_STATUS_ENRICHED
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 GOLD_SERVER_PROFILE_RECOMMENDATION
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "recommended_to"\cf0 \cb1 \
+\cb3     \cf6 SILVER_FORM_SUBMISSIONS_CLEANED
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 GOLD_ACCOUNT_SCORE_SUMMARY
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "summarized_to"\cf0 \cb1 \
+\
+\cb3     \cf6 BRONZE_EMAIL_SEND_STREAM
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Peach\cf0 \cb1 \
+\cb3     \cf6 BRONZE_EMAIL_INTERACTIONS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Peach\cf0 \cb1 \
+\cb3     \cf6 BRONZE_EMAIL_DELIVERY_SERVERS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Peach\cf0 \cb1 \
+\cb3     \cf6 BRONZE_FORM_SUBMISSIONS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Peach\cf0 \cb1 \
+\cb3     \cf6 BRONZE_SUBSCRIBERS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Peach\cf0 \cb1 \
+\cb3     \cf6 SILVER_CAMPAIGN_BASE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 SILVER_EMAIL_INTERACTIONS_CLEANED
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 SILVER_SUBSCRIBER_BASE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 SILVER_FORM_SUBMISSIONS_CLEANED
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 SILVER_SERVER_STATUS_ENRICHED
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 GOLD_CAMPAIGN_CONTENT_INSIGHTS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\cb3     \cf6 GOLD_SUBSCRIBER_ENGAGEMENT_SCORE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\cb3     \cf6 GOLD_SUBSCRIBER_CHURN_RISK_PREDICTION
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\cb3     \cf6 GOLD_SERVER_PROFILE_RECOMMENDATION
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\cb3     \cf6 GOLD_ACCOUNT_SCORE_SUMMARY
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\
+\cb3     \cf5 classDef\cf6  Peach\cf0  
+\f0\b \cb3 :
+\f1\b0 \cf7 \cb3 , stroke-width:1px, stroke-dasharray:none, stroke:#FBB35A, fill:#FFEFDB, color:#8F632D\cf0 \cb1 \
+\cb3     \cf5 classDef\cf6  Ash\cf0  
+\f0\b \cb3 :
+\f1\b0 \cf7 \cb3 , stroke-width:1px, stroke-dasharray:none, stroke:#999999, fill:#EEEEEE, color:#000000\cf0 \cb1 \
+\cb3     \cf5 classDef\cf6  Class_02\cf0  \cf6 fill
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 #FFF9C4, color:#000000, stroke:#FFD600\cf0 \cb1 \
+\
+\
+\
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f0\b \cf2 \cb3 erDiagram
+\f1\b0 \cf0 \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \cb3     \cf5 direction\cf6  TB\cf0 \cb1 \
+\cb3     \cf6 DIM_SUBSCRIBER\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  subscriber_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  subscription_status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  first_event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  last_event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 BOOLEAN\cf6  is_current\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 DIM_CAMPAIGN\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  send_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  subject\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  sender_email\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 DIM_SERVER\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  server_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  ip_address\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  current_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  blacklist_count\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  blacklist_status\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 DIM_ACCOUNT\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  account_name\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  industry\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  region\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  created_at\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  last_activity\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 FACT_CAMPAIGN_INTERACTIONS\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  interaction_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  send_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  subscriber_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  interaction_type\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  event_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  response_delay_sec\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 FACT_SUBSCRIBER_ENGAGEMENT\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  subscriber_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_interactions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  open_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  click_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  spam_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  unsubscribe_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  engagement_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 FACT_SERVER_HEALTH\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  server_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  current_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  blacklist_count\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  recommended_action\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 FACT_ACCOUNT_PERFORMANCE\cf0  
+\f0\b \cb3 \{
+\f1\b0 \cb1 \
+\cb3         \cf5 UUID\cf6  account_id\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_campaigns_sent\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_interactions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  open_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  spam_rate\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 INT\cf6  total_form_submissions\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 FLOAT\cf6  avg_server_score\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 STRING\cf6  account_health\cf0   \cf7 ""\cf0   \cb1 \
+\cb3         \cf5 TIMESTAMP\cf6  evaluation_time\cf0   \cf7 ""\cf0   \cb1 \
+\cb3     
+\f0\b \cb3 \}
+\f1\b0 \cb1 \
+\
+\cb3     \cf6 DIM_SUBSCRIBER
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_CAMPAIGN_INTERACTIONS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "has"\cf0 \cb1 \
+\cb3     \cf6 DIM_CAMPAIGN
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_CAMPAIGN_INTERACTIONS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "belongs_to"\cf0 \cb1 \
+\cb3     \cf6 DIM_SUBSCRIBER
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_SUBSCRIBER_ENGAGEMENT
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "summarized_as"\cf0 \cb1 \
+\cb3     \cf6 DIM_SERVER
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_SERVER_HEALTH
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "evaluated_as"\cf0 \cb1 \
+\cb3     \cf6 DIM_ACCOUNT
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_ACCOUNT_PERFORMANCE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "summarized_as"\cf0 \cb1 \
+\cb3     \cf6 DIM_ACCOUNT
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_SUBSCRIBER_ENGAGEMENT
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "groups"\cf0 \cb1 \
+\cb3     \cf6 DIM_ACCOUNT
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_CAMPAIGN_INTERACTIONS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "groups"\cf0 \cb1 \
+\cb3     \cf6 DIM_ACCOUNT
+\f0\b \cf8 \cb3 ||--o\{
+\f1\b0 \cf6 \cb3 FACT_SERVER_HEALTH
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 "groups"\cf0 \cb1 \
+\
+\cb3     \cf6 DIM_SUBSCRIBER
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 DIM_CAMPAIGN
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 DIM_SERVER
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 DIM_ACCOUNT
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Ash\cf0 \cb1 \
+\cb3     \cf6 FACT_CAMPAIGN_INTERACTIONS
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\cb3     \cf6 FACT_SUBSCRIBER_ENGAGEMENT
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\cb3     \cf6 FACT_SERVER_HEALTH
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\cb3     \cf6 FACT_ACCOUNT_PERFORMANCE
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 ::Class_02\cf0 \cb1 \
+\
+\cb3     \cf5 classDef\cf6  Peach\cf0  
+\f0\b \cb3 :
+\f1\b0 \cf7 \cb3 , stroke-width:1px, stroke-dasharray:none, stroke:#FBB35A, fill:#FFEFDB, color:#8F632D\cf0 \cb1 \
+\cb3     \cf5 classDef\cf6  dimension\cf0  \cf6 fill
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 #eeeeee, stroke:#9e9e9e, color:#424242, stroke-width:1px;\cf0 \cb1 \
+\cb3     \cf5 classDef\cf6  fact\cf0  \cf6 fill
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 #ffe0b2, stroke:#fb8c00, color:#e65100, stroke-width:1px;\cf0 \cb1 \
+\cb3     \cf5 classDef\cf6  gold\cf0  \cf6 fill
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 #fff9c4, stroke:#ffeb3b, color:#f57f17, stroke-width:1px;\cf0 \cb1 \
+\cb3     \cf5 classDef\cf6  Ash\cf0  
+\f0\b \cb3 :
+\f1\b0 \cf7 \cb3 , stroke-width:1px, stroke-dasharray:none, stroke:#999999, fill:#EEEEEE, color:#000000\cf0 \cb1 \
+\cb3     \cf5 classDef\cf6  Class_02\cf0  \cf6 fill
+\f0\b \cf0 \cb3 :
+\f1\b0 \cf7 \cb3 #FFF9C4, color:#000000, stroke:#FFD600\cf0 \cb1 \
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+}
